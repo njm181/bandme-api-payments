@@ -10,8 +10,8 @@ const router = Router();
 router.post('/checkout', createCheckoutController);
 
 router.post('/prueba', function(req, res) {
-    logger.info('LOG PROPIOOOOOOOOOooooooooooooooooooooooo: '+ req.body);
-    //res.send('Ruta de prueba: '+ );
+    logger.info('LOG PROPIOOOOOOOOOooooooooooooooooooooooo: '+ JSON.stringify(req.body));
+    res.send('Ruta de prueba: ');
 })
 
 
