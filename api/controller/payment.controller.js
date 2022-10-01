@@ -14,13 +14,13 @@ const createCheckoutController = async(req, res = response) => {
         if(mercadoPagoCheckout.isSuccess){
             response = res.status(200).json({
                 isSuccess: mercadoPagoCheckout.isSuccess,
-                data: mercadoPagoCheckout.data,
+                mercado_pago_data: mercadoPagoCheckout.data,
                 message: mercadoPagoCheckout.message
             });
         }else{
             response = res.status(200).json({
                 isSuccess: mercadoPagoCheckout.isSuccess,
-                data: mercadoPagoCheckout.data,
+                mercado_pago_data: mercadoPagoCheckout.data,
                 message: mercadoPagoCheckout.message
             });
         }
