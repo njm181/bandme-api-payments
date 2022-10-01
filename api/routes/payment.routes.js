@@ -9,7 +9,7 @@ const router = Router();
 
 router.post('/checkout', createCheckoutController);
 
-router.get('/prueba', function(req, res) {
+router.post('/prueba', function(req, res) {
     logger.info('LOG PROPIOOOOOOOOOooooooooooooooooooooooo')
     res.send('Ruta de prueba: ');
 })
