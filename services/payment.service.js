@@ -59,7 +59,7 @@ class PaymentService {
             console.log('RESPUESTA DE MERCADO PAGO: '+ JSON.stringify(response.body, null, "  ")); 
             mercadoPagoResponse = {
                 isSuccess: true,
-                data: response.body,
+                data: response.body.init_point,
                 message: "Operación exitosa"
             }
         }).catch(function(error){

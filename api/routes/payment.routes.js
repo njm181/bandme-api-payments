@@ -7,8 +7,8 @@ const router = Router();
 
 router.post('/checkout', createCheckoutController);
 
-router.get('/prueba', function(req, res) {
-    res.send('Ruta de prueba')
+router.post('/prueba', function(req, res) {
+    res.send('Ruta de prueba: ');
 })
 
 
