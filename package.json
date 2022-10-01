@@ -1,0 +1,24 @@
+{
+  "name": "bandme-api-payments",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.1",
+    "express-validator": "^6.14.2",
+    "helmet": "^6.0.0",
+    "mercadopago": "^1.5.14",
+    "moongose": "^1.0.0",
+    "nodemon": "^2.0.20"
+  }
+}
