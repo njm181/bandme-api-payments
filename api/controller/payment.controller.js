@@ -43,6 +43,36 @@ const createCheckoutController = async(req, res = response) => {
         });
     } 
 }
+
+
+const checkoutPaymentDataController = async(req, res = response) => {
+    const { resource } = req.body;
+    try{
+        const paymentData = await paymentService.verifyPaymentData(resource);
+        if(paymentData.isSuccess){
+            res.status(200).json({
+                isSuccess: paymentData.isSuccess,
+                data: paymentData.data,
+                message: paymentData.message
+            });
+        }else{
+            res.status(200).json({
+                isSuccess: paymentData.isSuccess,
+                data: paymentData.data,
+                message: paymentData.message
+            });
+        }
+    } catch(error){
+        console.log('No se pudo autenticar la identidad: ', error);
+        return res.status(500).json({
+            message: 'No se pudo autenticar la identidad'
+        });
+    }
+}
+
+
+
 module.exports = {
-    createCheckoutController
+    createCheckoutController,
+    checkoutPaymentDataController
 }
