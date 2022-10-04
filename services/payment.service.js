@@ -1,6 +1,6 @@
 const axios = require('axios').default;
-// SDK de Mercado Pago
 const mercadopago = require ('mercadopago');
+const Payment = require('../models/payment.model');
 
 class PaymentService {
     constructor(){}
@@ -18,24 +18,15 @@ class PaymentService {
 
     
     async createCheckout(userId, payload){
-        console.log("USER ID OBTENIDO --> " + userId);
-        //genero la transaccion
-        //si es exitosa busco en la base de datos el user id y actualizo su estado a isPremium=true
-        //genero un nuevo documento que asocie el id del usuario a la transaccion con fecha, hora, monto y fecha de vencimiento que es un año despues de la fecha de compra, tambien que tenga el status vigente o expirado
-        //entonces cada vez que se inicie sesion se comprueba la fecha de vencimiento, si ya expiro entonces el estado se cambia a isPremium=false cuando se hace el login
-        //cuando se hace una nueva compra se genera un nuevo documento con un status nuevo vigente
-        //se asocia al id del usuario al id del ultimo documento de compra generado, entonces si el usuario hizo una compra y ya tenia otras previas cuando se busque en ese documento de compras el id de usuario va a traer todos los registros de compra, ahi filtramos por status vigente o distinto de expirado y obtenemos el ultimo creado
-        //obtengo respuesta, si es exitosa mando ini_point al front
-
         let mercadoPagoResponse = {
             isSuccess: false,
             data: null,
             message: ''
         }
+        let savePreferenceCreated;
 
-        // Agrega credenciales
         mercadopago.configure({
-        access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN //--> Quien es el vendedor, a que cuenta va la tarazca
+        access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN //--> Quien es el vendedor
         });
         console.log("DATOS DE LA COMPRA ----> " + JSON.stringify(payload));
         let preference = {
@@ -53,10 +44,14 @@ class PaymentService {
         
         await mercadopago.preferences.create(preference)
         .then(function(response){
-            //respuesta de nuestro servidor
-            //respuesta al front init_point
-            //id de la preferencia creada
             console.log('RESPUESTA DE MERCADO PAGO: '+ JSON.stringify(response.body, null, "  ")); 
+            savePreferenceCreated = new Payment({
+                app_email_user: response.body.payer.email,
+                app_user_id: userId,
+                pref_data_created: response.body.date_created,
+                pref_id: response.body.id
+            });
+
             mercadoPagoResponse = {
                 isSuccess: true,
                 data: response.body.init_point,
@@ -70,9 +65,92 @@ class PaymentService {
                 message: "Operación fallida"
             }
         });
+        const prefCreated = await savePreferenceCreated.save();
         return mercadoPagoResponse;
     }
 
+    async verifyPaymentData(resource){
+        let response = {
+            isSuccess: false,
+            data: null,
+            message: ''
+        }
+        try{
+            const data = await this.getPaymentDone(resource);
+            //buscar en mongo por 'preference_id' el documento creado cuando se genero la preferencia
+            console.log("TODOS LOS DATOS LISTOS -->  " + JSON.stringify(data));
+
+            let document = await Payment.findOneAndUpdate({pref_id: data.preference_id}, data);
+
+            console.log('ANTES DEL FIND ONE: ' + document);
+
+            document = await Payment.findOne({pref_id:data.preference_id});
+
+            console.log('DESPUES DEL FIND ONE: ' + document);
+
+            response = {
+                isSuccess: true,
+                data: document,
+                message: 'Registro y actualización del pago exitoso'
+            }
+
+        }catch(error){
+            console.log("Error al buscar el pago y actulizarlo: " + error);
+            response = {
+                isSuccess: false,
+                data: null,
+                message: 'Error al verificar los datos del pago'
+            }
+        }
+        return response;
+    }
+
+    async getPaymentDone(resource){
+        try{
+            const {data:response} = await axios.get(resource, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
+                }
+            });
+            const orderData = await this.getPaymentOrder(response.collection.order_id);
+            let paymentData = {
+                payment_id: response.collection.id,
+                data_created: response.collection.data_created,
+                data_approved: response.collection.data_approved,
+                payer_id: response.collection.payer.id,
+                payer_email: response.collection.payer.email,
+                transaction_amount: response.collection.transaction_amount,
+                status: response.collection.status,
+                order_id: response.collection.order_id,
+                reason: response.collection.reason,
+                preference_id: orderData.preference_id,
+                quantity: orderData.quantity,
+                unit_price: orderData.unit_price
+            };
+            return paymentData;
+        }catch(error){
+            console.log("Error al consultar el pago realizado: " + error);
+        }
+    }
+
+    async getPaymentOrder(orderId){
+        try{
+            const {data:response} = await axios.get(`https://api.mercadopago.com/merchant_orders/${orderId}`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
+                }
+            });
+            console.log(response.preference_id)
+            const orderData = {
+                preference_id: response.preference_id,
+                quantity: response.items[0].quantity,
+                unit_price: response.items[0].unit_price
+            }
+            return orderData;
+        }catch(error){
+            console.log("Error al consultar la orden del pago realizado: " + error);
+        }
+    }
 }
 
 module.exports = new PaymentService();
