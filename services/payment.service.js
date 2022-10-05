@@ -50,7 +50,7 @@ class PaymentService {
             savePreferenceCreated = new Payment({
                 app_email_user: response.body.payer.email,
                 app_user_id: userId,
-                pref_date_created: new Date().toLocaleString(),//response.body.date_created,
+                pref_date_created: response.body.date_created,
                 pref_id: response.body.id
             });
 
