@@ -6,7 +6,6 @@ const logger = require('heroku-logger')
 
 const router = Router();
 
-
 router.post('/checkout', createCheckoutController);
 
 router.post('/checkout-payment-data', checkoutPaymentDataController)
