@@ -1,6 +1,7 @@
 const axios = require('axios').default;
 const mercadopago = require ('mercadopago');
 const Payment = require('../models/payment.model');
+const User = require('../models/user.model');
 
 class PaymentService {
     constructor(){}
@@ -82,15 +83,24 @@ class PaymentService {
 
             let document = await Payment.findOneAndUpdate({pref_id: data.preference_id}, data);
 
-            console.log('ANTES DEL FIND ONE: ' + document);
+            console.log('DESPUES DE ACTUALIZAR: ' + document);
 
-            document = await Payment.findOne({pref_id:data.preference_id});
+            /* document = await Payment.findOne({pref_id:data.preference_id});
 
-            console.log('DESPUES DEL FIND ONE: ' + document);
+            console.log('DESPUES DEL FIND ONE: ' + document); */
+
+            //actualizar status del usuario
+            let userToUpdate = await User.findByIdAndUpdate({_id: document.app_user_id},{isPremium: true});
+            console.log("USUARIO ACTUALIZADO: " + userToUpdate);
+
+            const paymentUserData = {
+                user_updated: userToUpdate,
+                payment_data: document
+            }
 
             response = {
                 isSuccess: true,
-                data: document,
+                data: paymentUserData,
                 message: 'Registro y actualización del pago exitoso'
             }
 
