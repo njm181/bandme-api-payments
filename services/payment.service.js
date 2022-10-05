@@ -125,8 +125,8 @@ class PaymentService {
             const orderData = await this.getPaymentOrder(response.collection.order_id);
             let paymentData = {
                 payment_id: response.collection.id,
-                data_created: response.collection.data_created,
-                data_approved: response.collection.data_approved,
+                data_created: response.collection.date_created,
+                data_approved: response.collection.date_approved,
                 payer_id: response.collection.payer.id,
                 payer_email: response.collection.payer.email,
                 transaction_amount: response.collection.transaction_amount,
