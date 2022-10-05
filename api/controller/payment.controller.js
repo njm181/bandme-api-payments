@@ -47,19 +47,22 @@ const createCheckoutController = async(req, res = response) => {
 
 const checkoutPaymentDataController = async(req, res = response) => {
     const { resource } = req.body;
+    console.log('URL DE NOTIFICACION DE MP ---> '+ resource);
     try{
-        const paymentData = await paymentService.verifyPaymentData(resource);
-        if(paymentData.isSuccess){
+        //const paymentData = await paymentService.verifyPaymentData(resource);
+        if(true){//paymentData.isSuccess
             res.status(200).json({
-                isSuccess: paymentData.isSuccess,
+                message: 'SUCCESS'
+                /* isSuccess: paymentData.isSuccess,
                 data: paymentData.data,
-                message: paymentData.message
+                message: paymentData.message */
             });
         }else{
             res.status(200).json({
-                isSuccess: paymentData.isSuccess,
+                message: 'FAILURE'
+                /* isSuccess: paymentData.isSuccess,
                 data: paymentData.data,
-                message: paymentData.message
+                message: paymentData.message */
             });
         }
     } catch(error){
