@@ -47,11 +47,10 @@ class PaymentService {
         .then(function(response){
             console.log('RESPUESTA DE MERCADO PAGO: '+ JSON.stringify(response.body, null, "  ")); 
             //la respuesta del servicio me trae la fecha y hora con una hora menos
-            const date = new Date().toLocaleString(),//response.body.date_created,
             savePreferenceCreated = new Payment({
                 app_email_user: response.body.payer.email,
                 app_user_id: userId,
-                pref_date_created: date.toString(),
+                pref_date_created: new Date().toLocaleString(),//response.body.date_created,
                 pref_id: response.body.id
             });
 
