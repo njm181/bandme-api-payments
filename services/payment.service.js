@@ -46,6 +46,7 @@ class PaymentService {
         await mercadopago.preferences.create(preference)
         .then(function(response){
             console.log('RESPUESTA DE MERCADO PAGO: '+ JSON.stringify(response.body, null, "  ")); 
+            
             //la respuesta del servicio me trae la fecha y hora con una hora menos
             savePreferenceCreated = new Payment({
                 app_email_user: response.body.payer.email,
