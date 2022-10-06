@@ -1,7 +1,6 @@
 const { Schema, model, mongoose } = require('mongoose');
 
 const PaymentSchema = Schema({
-    //email del usuario registrado en bandme puede ser distinto del email del usuario de MP que realizo el pago
     app_email_user: {
         type: String
     },

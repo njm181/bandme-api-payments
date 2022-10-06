@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { createCheckoutController, checkoutPaymentDataController } = require('../controller/payment.controller');
-const logger = require('heroku-logger')
+const logger = require('heroku-logger');
 
 
 const router = Router();
