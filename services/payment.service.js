@@ -26,49 +26,57 @@ class PaymentService {
         }
         let savePreferenceCreated;
 
-        mercadopago.configure({
-        access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN //--> Quien es el vendedor
-        });
-        console.log("DATOS DE LA COMPRA ----> " + JSON.stringify(payload));
-        let preference = {
-            items: [
-                {
-                    title: payload.data.title,
-                    unit_price: payload.data.unit_price,
-                    quantity: payload.data.quantity
-                }
-            ],
-            "payer": {
-                "email": payload.user_email
-            }
-        };
-        
-        await mercadopago.preferences.create(preference)
-        .then(function(response){
-            console.log('RESPUESTA DE MERCADO PAGO: '+ JSON.stringify(response.body, null, "  ")); 
-            
-            //la respuesta del servicio me trae la fecha y hora con una hora menos
-            savePreferenceCreated = new Payment({
-                app_email_user: response.body.payer.email,
-                app_user_id: userId,
-                pref_date_created: response.body.date_created,
-                pref_id: response.body.id
-            });
+        const userProfileDb = await User.findById(userId);
+        const { isPremium } = userProfileDb;
 
-            mercadoPagoResponse = {
-                isSuccess: true,
-                data: response.body.init_point,
-                message: "Operación exitosa"
-            }
-        }).catch(function(error){
-            console.log(error);
+        if(!isPremium){
+            mercadopago.configure({
+                access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN 
+                });
+                let preference = {
+                    items: [
+                        {
+                            title: payload.data.title,
+                            unit_price: payload.data.unit_price,
+                            quantity: payload.data.quantity
+                        }
+                    ],
+                    "payer": {
+                        "email": payload.user_email
+                    }
+                };
+                
+                await mercadopago.preferences.create(preference)
+                .then(function(response){                    
+                    savePreferenceCreated = new Payment({
+                        app_email_user: response.body.payer.email,
+                        app_user_id: userId,
+                        pref_date_created: response.body.date_created,
+                        pref_id: response.body.id
+                    });
+        
+                    mercadoPagoResponse = {
+                        isSuccess: true,
+                        data: response.body.init_point,
+                        message: "Operación exitosa"
+                    }
+                }).catch(function(error){
+                    console.log(error);
+                    mercadoPagoResponse = {
+                        isSuccess: false,
+                        data: "",
+                        message: "Operación fallida"
+                    }
+                });
+                const prefCreated = await savePreferenceCreated.save();
+        } else {
             mercadoPagoResponse = {
                 isSuccess: false,
                 data: "",
-                message: "Operación fallida"
+                message: "El usuario ya es premium"
             }
-        });
-        const prefCreated = await savePreferenceCreated.save();
+        }
+        
         return mercadoPagoResponse;
     }
 
@@ -80,20 +88,10 @@ class PaymentService {
         }
         try{
             const data = await this.getPaymentDone(resource);
-            //buscar en mongo por 'preference_id' el documento creado cuando se genero la preferencia
-            console.log("TODOS LOS DATOS LISTOS -->  " + JSON.stringify(data));
-
             let document = await Payment.findOneAndUpdate({pref_id: data.preference_id}, data);
-
-            console.log('DESPUES DE ACTUALIZAR: ' + document);
-
-            /* document = await Payment.findOne({pref_id:data.preference_id});
-
-            console.log('DESPUES DEL FIND ONE: ' + document); */
-
-            //actualizar status del usuario
+            document = await Payment.findOne({pref_id:data.preference_id});
             let userToUpdate = await User.findByIdAndUpdate({_id: document.app_user_id},{isPremium: true});
-            console.log("USUARIO ACTUALIZADO: " + userToUpdate);
+            userToUpdate = await User.findOne({_id:document.app_user_id});
 
             const paymentUserData = {
                 user_updated: userToUpdate,
@@ -137,7 +135,9 @@ class PaymentService {
                 reason: response.collection.reason,
                 preference_id: orderData.preference_id,
                 quantity: orderData.quantity,
-                unit_price: orderData.unit_price
+                unit_price: orderData.unit_price,
+                payment_date_created: response.date_created,
+                payment_date_approved: response.date_approved
             };
             return paymentData;
         }catch(error){
@@ -152,7 +152,6 @@ class PaymentService {
                     'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
                 }
             });
-            console.log(response.preference_id)
             const orderData = {
                 preference_id: response.preference_id,
                 quantity: response.items[0].quantity,
