@@ -4,7 +4,7 @@ const paymentService = require("../../services/payment.service");
 const createCheckoutController = async(req, res = response) => {
     const token = req.headers['auth-token'];
     const { payload } = req.body;
-    
+    console.log(token)
     if(token != undefined){
         try{
         const {uid} = await paymentService.decodeToken(token);
@@ -70,9 +70,52 @@ const checkoutPaymentDataController = async(req, res = response) => {
     }
 }
 
+const getSuscriptionDataController = async(req, res = response) => {
+    const token = req.headers['auth-token'];
+    console.log(token)
+    if(token != undefined){
+        try{
+        const {uid} = await paymentService.decodeToken(token);
+        if(uid != '' && uid != undefined && uid != null){
+        const suscriptionData = await paymentService.getSuscriptionData();
+        let response;
+        if(suscriptionData.isExist){
+            response = res.status(200).json({
+                isExist: suscriptionData.isExist,
+                suscription: suscriptionData.suscription,
+                message: suscriptionData.message
+            });
+        }else{
+            response = res.status(200).json({
+                isExist: suscriptionData.isExist,
+                suscription: suscriptionData.suscription,
+                message: suscriptionData.message
+            });
+        }
+    }else{
+        console.log('No se pudo autenticar la identidad por que el token es incorrecto ');
+        return res.status(500).json({
+            message: 'No se pudo autenticar la identidad'
+        });
+    }
+    } catch(error){
+        console.log('No se pudo autenticar la identidad: ', error);
+        return res.status(500).json({
+            message: 'No se pudo autenticar la identidad'
+        });
+    }
+
+    }else{
+        return res.status(400).json({
+            message: 'Error request by bad token'
+        });
+    } 
+}
+
 
 
 module.exports = {
     createCheckoutController,
-    checkoutPaymentDataController
+    checkoutPaymentDataController,
+    getSuscriptionDataController
 }

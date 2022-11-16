@@ -2,6 +2,8 @@ const axios = require('axios').default;
 const mercadopago = require ('mercadopago');
 const Payment = require('../models/payment.model');
 const User = require('../models/user.model');
+const moment = require('moment');
+const Suscripcion = require('../models/suscripcion.model');
 
 class PaymentService {
     constructor(){}
@@ -17,6 +19,31 @@ class PaymentService {
         }
     }
 
+    async getSuscriptionData(){
+        let responseData = {
+            isExist: false,
+            suscription: null,
+            message: ''
+        }
+        try{
+            const idSuscripcion = '63754d712a5d66ab9dbfe230';
+            const suscriptionResult = await Suscripcion.findById(idSuscripcion);
+            console.log("datos de la suscripcion ==> ", suscriptionResult);
+            responseData = {
+                isExist: true,
+                suscription: suscriptionResult,
+                message: "Datos de la suscripción obtenidos exitosamente"
+            }
+        }catch(error){
+            console.log("Error al buscar los datos de la suscripcion: ", error);
+            responseData = {
+                isExist: false,
+                suscription: null,
+                message: 'No pudimos obtener los datos de la suscripción, intente más tarde por favor'
+            }
+        }
+        return responseData;
+    }
     
     async createCheckout(userId, payload){
         let mercadoPagoResponse = {
@@ -45,14 +72,19 @@ class PaymentService {
                         "email": payload.user_email
                     }
                 };
-                
+                const year = moment().get('year');
+                const month = moment().get('month') + 1;  // 0 to 11
+                const day = moment().get('date');
+                const fechaActualParseada = day+"/"+month+"/"+year;
+            
                 await mercadopago.preferences.create(preference)
                 .then(function(response){                    
                     savePreferenceCreated = new Payment({
                         app_email_user: response.body.payer.email,
                         app_user_id: userId,
                         pref_date_created: response.body.date_created,
-                        pref_id: response.body.id
+                        pref_id: response.body.id,
+                        fecha_compra: fechaActualParseada
                     });
         
                     mercadoPagoResponse = {
@@ -122,6 +154,7 @@ class PaymentService {
                     'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
                 }
             });
+            
             const orderData = await this.getPaymentOrder(response.collection.order_id);
             let paymentData = {
                 payment_id: response.collection.id,

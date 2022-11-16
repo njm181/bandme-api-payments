@@ -45,6 +45,9 @@ const PaymentSchema = Schema({
     },
     quantity: {
         type: Number
+    },
+    fecha_compra: {
+        type: String
     }
 });
 
