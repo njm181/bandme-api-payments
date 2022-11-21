@@ -4,7 +4,6 @@ const paymentService = require("../../services/payment.service");
 const createCheckoutController = async(req, res = response) => {
     const token = req.headers['auth-token'];
     const { payload } = req.body;
-    console.log(token)
     if(token != undefined){
         try{
         const {uid} = await paymentService.decodeToken(token);
@@ -25,13 +24,11 @@ const createCheckoutController = async(req, res = response) => {
             });
         }
     }else{
-        console.log('No se pudo autenticar la identidad por que el token es incorrecto ');
         return res.status(500).json({
             message: 'No se pudo autenticar la identidad'
         });
     }
     } catch(error){
-        console.log('No se pudo autenticar la identidad: ', error);
         return res.status(500).json({
             message: 'No se pudo autenticar la identidad'
         });
@@ -63,7 +60,6 @@ const checkoutPaymentDataController = async(req, res = response) => {
             });
         }
     } catch(error){
-        console.log('No se pudo autenticar la identidad: ', error);
         return res.status(500).json({
             message: 'No se pudo autenticar la identidad'
         });
@@ -72,7 +68,6 @@ const checkoutPaymentDataController = async(req, res = response) => {
 
 const getSuscriptionDataController = async(req, res = response) => {
     const token = req.headers['auth-token'];
-    console.log(token)
     if(token != undefined){
         try{
         const {uid} = await paymentService.decodeToken(token);
@@ -93,13 +88,11 @@ const getSuscriptionDataController = async(req, res = response) => {
             });
         }
     }else{
-        console.log('No se pudo autenticar la identidad por que el token es incorrecto ');
         return res.status(500).json({
             message: 'No se pudo autenticar la identidad'
         });
     }
     } catch(error){
-        console.log('No se pudo autenticar la identidad: ', error);
         return res.status(500).json({
             message: 'No se pudo autenticar la identidad'
         });
