@@ -28,14 +28,12 @@ class PaymentService {
         try{
             const idSuscripcion = '63754d712a5d66ab9dbfe230';
             const suscriptionResult = await Suscripcion.findById(idSuscripcion);
-            console.log("datos de la suscripcion ==> ", suscriptionResult);
             responseData = {
                 isExist: true,
                 suscription: suscriptionResult,
                 message: "Datos de la suscripción obtenidos exitosamente"
             }
         }catch(error){
-            console.log("Error al buscar los datos de la suscripcion: ", error);
             responseData = {
                 isExist: false,
                 suscription: null,
@@ -93,7 +91,6 @@ class PaymentService {
                         message: "Operación exitosa"
                     }
                 }).catch(function(error){
-                    console.log(error);
                     mercadoPagoResponse = {
                         isSuccess: false,
                         data: "",
@@ -137,7 +134,6 @@ class PaymentService {
             }
 
         }catch(error){
-            console.log("Error al buscar el pago y actulizarlo: " + error);
             response = {
                 isSuccess: false,
                 data: null,
