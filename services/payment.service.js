@@ -93,7 +93,7 @@ class PaymentService {
                 }).catch(function(error){
                     mercadoPagoResponse = {
                         isSuccess: false,
-                        data: "",
+                        data: null,
                         message: "Operación fallida"
                     }
                 });
@@ -175,6 +175,7 @@ class PaymentService {
     }
 
     async getPaymentOrder(orderId){
+        
         try{
             const {data:response} = await axios.get(`https://api.mercadopago.com/merchant_orders/${orderId}`, {
                 headers: {
@@ -189,6 +190,7 @@ class PaymentService {
             return orderData;
         }catch(error){
             console.log("Error al consultar la orden del pago realizado: " + error);
+            return null
         }
     }
 }
